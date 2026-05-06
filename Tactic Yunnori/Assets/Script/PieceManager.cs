@@ -1,13 +1,16 @@
 using UnityEngine;
-using System.Collections.Generic;
 
-[System.Serializable]
-public class YutNode
+public class PieceManager : MonoBehaviour
 {
-    public string nodeName;
-    public Vector3 position;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
 
-    public List<int> nextNodes = new List<int>();
-
-    public bool IsBranchNode => nextNodes.Count > 1;
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
 }

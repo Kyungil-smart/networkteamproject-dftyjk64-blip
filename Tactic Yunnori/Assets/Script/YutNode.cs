@@ -1,16 +1,13 @@
 using UnityEngine;
+using System.Collections.Generic;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+[System.Serializable]
+public class YutNode
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public string nodeName;
+    public Vector3 position;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public List<int> nextNodes = new List<int>();
+
+    public bool IsBranchNode => nextNodes.Count > 1;
 }
