@@ -20,16 +20,59 @@ public class YutPiece : MonoBehaviour
     {
         if (Keyboard.current.spaceKey.wasPressedThisFrame) 
         {
-            MoveOneStep();
+            StartCoroutine(MoveRoutine(1));
         }
     }
 
-    void MoveOneStep()
+    private int GetClickedNodeIndex()
     {
-        int nextIndex = (currentNodeIndex + 1) % mapData.nodes.Count;
-        currentNodeIndex = nextIndex;
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        StartCoroutine(MoveToNode(mapData.nodes[currentNodeIndex].position));
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                YutNodeProperty nodeProp = hit.collider.GetComponentInParent<YutNodeProperty>();
+
+                if (nodeProp != null)
+                {
+                    Debug.Log($"클릭한 노드 번호: {nodeProp.nodeIndex}");
+                    return nodeProp.nodeIndex;
+                }
+            }
+        }
+        return -1;
+    }
+    public IEnumerator MoveRoutine(int moveCount)
+    {
+        for (int i = 0; i < moveCount; i++)
+        {
+            YutNode currentNode = mapData.nodes[currentNodeIndex];
+            int nextIndex = -1;
+
+            if (i == 0 && currentNode.IsBranchNode)
+            {
+                Debug.Log("이동할 방향의 노드를 클릭하세요!");
+
+                while (nextIndex == -1)
+                {
+                    int clickedIndex = GetClickedNodeIndex();
+
+                    if (currentNode.nextNodes.Contains(clickedIndex))
+                    {
+                        nextIndex = clickedIndex;
+                    }
+                    yield return null;
+                }
+            }
+            else
+            {
+                nextIndex = currentNode.nextNodes[0];
+            }
+
+            currentNodeIndex = nextIndex;
+            yield return StartCoroutine(MoveToNode(mapData.nodes[currentNodeIndex].position));
+        }
     }
 
     public IEnumerator MoveToNode(Vector3 targetPos)
