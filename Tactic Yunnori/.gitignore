@@ -100,3 +100,7 @@ InitTestScene*.unity*
 
 # Ignore imported assets
 Assets/Imports/**
+
+# TextMesh Pro
+/[Aa]ssets/TextMesh Pro/Examples & Extras/
+/[Aa]ssets/TextMesh Pro/Resources/
