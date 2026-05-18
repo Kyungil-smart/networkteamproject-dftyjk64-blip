@@ -8,6 +8,10 @@ public class YutPiece : MonoBehaviour
     public int currentNodeIndex = 0;
     public bool isFinished = false;
 
+    [Header("멀티플레이어 설정")]
+    public ulong ownerClientId;
+    public int pieceId;
+
     private void Start()
     {
         if (mapData != null && mapData.nodes.Count > 0)
@@ -45,33 +49,57 @@ public class YutPiece : MonoBehaviour
     }
     public IEnumerator MoveRoutine(int moveCount)
     {
-        for (int i = 0; i < moveCount; i++)
+        if (!gameObject.activeSelf)
         {
-            YutNode currentNode = mapData.nodes[currentNodeIndex];
-            int nextIndex = -1;
+            gameObject.SetActive(true);
+        }
 
-            if (i == 0 && currentNode.IsBranchNode)
+        if (moveCount == -1)
+        {
+            if (currentNodeIndex == 0)
             {
-                Debug.Log("이동할 방향의 노드를 클릭하세요!");
-
-                while (nextIndex == -1)
-                {
-                    int clickedIndex = GetClickedNodeIndex();
-
-                    if (currentNode.nextNodes.Contains(clickedIndex))
-                    {
-                        nextIndex = clickedIndex;
-                    }
-                    yield return null;
-                }
+                currentNodeIndex = 20;
             }
             else
             {
-                nextIndex = currentNode.nextNodes[0];
+                currentNodeIndex--;
             }
 
-            currentNodeIndex = nextIndex;
             yield return StartCoroutine(MoveToNode(mapData.nodes[currentNodeIndex].position));
+        }
+        else
+        {
+            for (int i = 0; i < moveCount; i++)
+            {
+                YutNode currentNode = mapData.nodes[currentNodeIndex];
+                int nextIndex = -1;
+
+                if (i == 0 && currentNode.IsBranchNode)
+                {
+                    Debug.Log("이동할 방향의 노드를 클릭하세요!");
+
+                    while (nextIndex == -1)
+                    {
+                        if (Mouse.current.leftButton.wasPressedThisFrame)
+                        {
+                            int clickedIndex = GetClickedNodeIndex();
+
+                            if (currentNode.nextNodes.Contains(clickedIndex))
+                            {
+                                nextIndex = clickedIndex;
+                            }
+                        }
+                        yield return null;
+                    }
+                }
+                else
+                {
+                    nextIndex = currentNode.nextNodes[0];
+                }
+
+                currentNodeIndex = nextIndex;
+                yield return StartCoroutine(MoveToNode(mapData.nodes[currentNodeIndex].position));
+            }
         }
     }
 

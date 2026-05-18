@@ -20,36 +20,52 @@ public class YutManager : NetworkBehaviour
 
     public void SubmitChoice(bool isFront)
     {
+        SubmitChoiceServerRpc(isFront);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void SubmitChoiceServerRpc(bool isFront)
+    {
         if (playerChoices.Count >= 4) return;
 
         playerChoices.Add(isFront);
+
         Debug.Log($"플레이어 {playerChoices.Count} 선택 완료. (현재 {playerChoices.Count}/4)");
 
         if (playerChoices.Count == 4)
         {
-            ProcessResult();
+            bool[] finalResults = playerChoices.ToArray();
+
+            int frontCount = finalResults.Count(c => c == true);
+            int moveCount = 0;
+
+            switch (frontCount)
+            {
+                case 4: moveCount = 5; break;
+                case 3: moveCount = 1; break;
+                case 2: moveCount = 2; break;
+                case 1: moveCount = 3; break;
+                case 0: moveCount = 4; break;
+            }
+
+            ShowResultClientRpc(finalResults, moveCount);
+
+            playerChoices.Clear();
         }
     }
 
-    private void ProcessResult()
+    [ClientRpc]
+    private void ShowResultClientRpc(bool[] finalResults, int moveCount)
     {
-        int frontCount = playerChoices.Count(c => c == true);
-        string resultName = "";
-
-        switch (frontCount)
-        {
-            case 4: resultName = "모 (앞4)"; break;
-            case 3: resultName = "빽도 (앞3, 뒤1)"; break;
-            case 2: resultName = "개 (앞2, 뒤2)"; break;
-            case 1: resultName = "걸 (앞1, 뒤3)"; break;
-            case 0: resultName = "윷 (뒤4)"; break;
-        }
-
-        Debug.Log($"<color=yellow>전체 결과 발표: {resultName}!</color>");
-
         if (resultUI != null)
         {
-            resultUI.ShowResult(playerChoices.ToArray());
+            resultUI.ShowResult(finalResults);
+        }
+
+        YutPiece piece = FindFirstObjectByType<YutPiece>();
+        if (piece != null)
+        {
+            StartCoroutine(piece.MoveRoutine(moveCount));
         }
     }
 }
